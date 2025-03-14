@@ -150,3 +150,42 @@ Your architecture diagram should focus on the services and how they talk to one 
 ## Tips
 * We can access a running Docker container using `kubectl exec -it <pod_id> sh`. From there, we can `curl` an endpoint to debug network issues.
 * The starter project uses Python Flask. Flask doesn't work well with `asyncio` out-of-the-box. Consider using `multiprocessing` to create threads for asynchronous behavior in a standard Flask application.
+
+# MB DOC
+## Create 
+docker pull dpage/pgadmin4
+
+
+## Setup Kafka
+* Deploy Zookeeper and Kafka
+kubectl apply -f deployment/mbzookeeper.yaml
+kubectl apply -f deployment/mbkafka.yaml
+* Check POD and Services
+kubectl get pods,svc
+
+* Test Node Port with Powershell
+ Test-NetConnection -ComputerName localhost -Port 30092
+
+
+* create "test-topic"
+kubectl exec -it $(kubectl get pods -l app=kafka -o jsonpath='{.items[0].metadata.name}') -- \
+    kafka-topics.sh --create --topic test-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1
+
+##Docker Test
+docker-compose build
+docker-compose up -d
+docker-compose down
+
+docker exec mb-cd0309-message-passing-projects-starter-kafka-1 kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+docker exec -it mb-cd0309-message-passing-projects-starter-kafka-1 kafka-console-producer.sh --topic test-topic --bootstrap-server localhost:9092
+
+docker exec -it mb-cd0309-message-passing-projects-starter-kafka-1 kafka-console-consumer.sh --topic test-topic --bootstrap-server localhost:9092 --from-beginning
+
+KAfakService testen
+docker build -t mbapi .
+
+
+## install GRCPI
+`pip install grpcio-tools`
+Use GitBash: `python -m grpc_tools.protoc -I./ --python_out=./ --grpc_python_out=./ locations.proto`
